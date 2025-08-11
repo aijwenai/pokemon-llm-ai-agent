@@ -118,7 +118,8 @@ Instead of blindly retrieving all Pokémon data, the system applies a targeted r
 
 ```bash
 # Clone or download the project
-cd claude_pokemon_agent
+pwd
+cd pokemon-llm-ai-agent
 
 # Install dependencies
 pip install -r requirements.txt
