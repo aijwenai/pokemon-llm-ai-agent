@@ -159,7 +159,7 @@ Run the test version with predefined queries:
 python test_main.py
 ```
 
-This will test the system with a predefined query to verify everything works.
+This will test the system with a predefined query to verify everything works. You can add your own questions.
 
 ## Example Queries
 

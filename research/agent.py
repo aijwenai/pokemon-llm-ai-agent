@@ -1626,7 +1626,7 @@ Research Context (may be compressed due to size):
 Synthesize comprehensive findings in JSON:
 {{
     "key_findings": ["List of major discoveries that related to user's question from the research and your knowledge base"],
-    "comprehensive_conclusion": "Answer user's question based on evidence and your knowledge base",
+    "comprehensive_conclusion": "Answer user's question based on evidence and your knowledge base and include example pokemons",
     "actionable_recommendations": ["Giving specific recommendations for solving user's question in a logical way"],
     "confidence_score": 0.0-1.0,
     "evidence_summary": "Summary of evidence gathered",
