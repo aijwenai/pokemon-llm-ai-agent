@@ -84,6 +84,34 @@ Instead of blindly retrieving all Pokémon data, the system applies a targeted r
 4. **Logic:** Intersection → remove any with `type = flying`
 5. **LLM Reasoning:** Rank by `base_attack` and return top candidates with descriptions.
 
+---
+
+### 5. Limitations & Future Improvements
+
+- **Limited intent coverage**:  
+  Currently supports a fixed set of intent classes (e.g., trait search, comparison, single Pokémon info).  
+  → Future work: Expand to more complex questions (e.g., breeding compatibility, move set optimization, evolutionary path planning).
+
+- **Dependency on PokéAPI structure**:  
+  Changes in PokéAPI endpoints or data schema could break the mapping logic.  
+  → Future work: Add schema auto-discovery and fallback strategies and add other data sources.
+
+
+- **No cross-endpoint optimization**:  
+  At present, merging results from multiple endpoints uses basic intersection/union logic.  
+  → Future work: Add weighted scoring and probabilistic merging for more nuanced results.
+
+- **LLM context noise handling**:  
+  While API pre-filtering reduces noise, some irrelevant attributes still enter the LLM context.  
+  → Future work: Add content ranking before sending to LLM, or use vector similarity filtering.
+
+- **Single-turn conversation**:  
+  No memory of previous queries in the current implementation.  
+  → Future work: Enable multi-turn context tracking for follow-up questions.
+
+---
+
+
 ## Quick Start
 
 ### 1. Installation
