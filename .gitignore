@@ -42,6 +42,7 @@ dist/
 
 # Unit test reports
 TEST*.xml
+reports/
 
 # Makefiles can include local configurations
 Makefile.local

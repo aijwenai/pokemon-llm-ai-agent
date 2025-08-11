@@ -1,99 +1,234 @@
-# Convergence Take-Home Test
+# Pokemon Deep Research Agent
 
-This is a skeleton project for the Convergence take-home test. The project is set up with Docker to make development and testing consistent across different environments.
+A comprehensive Pokemon research system using intelligent query analysis, strategic API calls, and LLM-powered synthesis.
 
-## 🚀 Your Task
+## 📜 System Design
 
-Your goal is to build a deep research agent that can help users answer questions using the [Pokémon API](https://pokeapi.co/). The agent should be able to gather deep information, reason through the problem, and return a useful and rich response.
+The Pokémon Agent is designed to answer a wide range of Pokémon-related queries by combining LLM reasoning with selective API querying against the PokéAPI.
+Instead of blindly retrieving all Pokémon data, the system applies a targeted retrieval strategy to minimize noise and improve answer quality.
 
-This task is designed to reflect the kind of work you'd be doing on our team: figuring out the shape of the problem, making technical decisions under ambiguity, and learning as you go. There’s no single correct answer—we’re interested in **how you approach the problem**, not just whether you “finish” it.
+### 1. Architecture Overview
 
-### 🧭 Scope and Expectations
+### Key Steps
 
-At a minimum, your submission should include:
-- A working application that allows some form of interaction with your agent.
-- An agent that you implemented yourself (not just calling an agent library).
-- The ability to gather information from the Pokémon API to help answer the user’s input.
-- Basic code organization and a README with instructions on how to run your app.
+1. **User Query**  
+   Example: `"pink fiery Pokémon"`  
 
-These are the foundations—we recommend you **prioritize completing and polishing these before considering anything else**.
+2. **Intent Classification**  
+   - Detects query type (e.g., team selection, single Pokémon info, comparison).  
+   - Extracts facets from the query (e.g., `color=pink`, `trait=fiery`).  
 
-Once you’ve built the foundation, ask yourself:
+3. **Facet → API Mapping**  
+   - Maps each extracted facet to specific PokéAPI endpoints.  
+     Example:  
+       `color → /pokemon-color/pink`  
+       `trait → /type/fire`  
 
-- How can the agent reason more effectively before jumping to an answer?
-- What is deep research, how to make an agent **deep** ?
-- How does it decide when the task is “done” and ready to respond?
-- Would a simple UI help demonstrate the agent’s functionality more clearly?
-- Can your README help others understand your thought process?
+4. **Targeted API Calls**  
+   - Only queries the relevant endpoints instead of fetching all Pokémon.  
+   - Parallel calls for each facet to reduce latency.  
 
-### 🧠 Questions Worth Exploring (Optional, But Encouraged)
+5. **Candidate Merging**  
+   - Combines API results based on logic:  
+     **Intersection (AND)**: Pokémon must match all facets.  
+     **Union (OR)**: Pokémon can match any facet.  
+     Exclude flags applied at this stage.  
 
-If you feel confident in your core implementation, you’re welcome to explore deeper challenges. Rather than prescribe tasks, here are some prompts to help guide your thinking:
+6. **Filtered Pokémon List**  
+   - Deduplicated and cleaned candidate list.  
 
-- What if your agent forgets something important it previously discovered? How could you help it “remember” context across steps?
-- Could a planning step help the agent approach problems more systematically?
-- How can we speed up the deep research process?
-- How would the agent handle vague or underspecified inputs? 
-- How can we store the sessions and messages to allow users to revisit past interactions?
-- Is there a way to evaluate whether your agent is doing a good job?
+7. **LLM Reasoning**  
+   - Ranks Pokémon based on additional context (e.g., “aggressive” → higher attack stat).  
+   - Generates explanations and applies semantic filtering.  
 
-You don’t need to implement all—or even any—of these. But if you choose to explore one, we’d love to see your thinking reflected in the code or README.
+8. **Final Answer**  
+   Example: `"Magmar – pink and fiery with high attack power."`  
 
 ---
 
+### Design Benefits
+- **Efficiency**: Avoids brute-force scanning of all Pokémon.  
+- **Modularity**: Intent classification and API mapping are independent.  
+- **Deep Search Demonstration**: Combines multiple data sources before reasoning.  
+- **Extensibility**: Easily add new facets (e.g., habitat, shape, generation).  
 
-## Getting Started with Docker
+### 2. Flow Chart
+![System Flow](res/flow.png)
 
-### Prerequisites
+### 3. Key Design Choices
 
-- Docker
-- Docker Compose
+- **Facet-based querying** ensures we fetch only relevant Pokémon, reducing API load and LLM context noise.
+- **Flexible logic** allows different intents to use different combination strategies:
+  - **Intersection** for strict filtering.
+  - **Union** for broader recommendations.
+- **Two-phase intelligence**:
+  1. API pre-filtering to reduce irrelevant data.
+  2. LLM post-processing for reasoning, ranking, and explanation.
+- **Easily extensible**:
+  - New facets (e.g., `egg_group`, `generation`) can be added with a single mapping update.
+  - Intent–handler mapping allows new question types without major refactoring.
 
-### Development Setup
+---
 
-1. **Build and run the development environment:**
+### 4. Example
 
-   ```bash
-   make build
-   ```
-   then
-   ```bash
-   make start
-   ```
-2. **Add dependencies once in docker container:**
-   Add new libraries in requirements/dev.in
+**User Query:**  
+> Find a strong yellow Dragon Pokémon without Flying type
 
-   then
+**Pipeline:**
+1. **Intent:** `trait_search`
+2. **Facets:** `color = yellow`, `type = dragon`, `exclude_type = flying`
+3. **API Calls:**
+   - `/pokemon-color/yellow`
+   - `/type/dragon`
+4. **Logic:** Intersection → remove any with `type = flying`
+5. **LLM Reasoning:** Rank by `base_attack` and return top candidates with descriptions.
 
-   ```bash
-   make deps
-   ```
+## Quick Start
 
+### 1. Installation
+
+```bash
+# Clone or download the project
+cd claude_pokemon_agent
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 2. Environment Setup
+
+The project uses a `.env` file for configuration. A template is provided as `env_example.sh`.
+
+```bash
+# Copy the environment template
+cp env_example.sh .env
+
+# Edit the .env file with your settings
+# The file should contain:
+# OPENAI_API_KEY=your-openai-api-key-here
+# LOG_LEVEL=INFO
+```
+
+**Important**: Replace the placeholder API key in the `.env` file with your actual OpenAI API key.
+
+### 3. Running the System
+
+#### Interactive Mode (main.py)
+Run the interactive version that takes keyboard input:
+
+```bash
+python main.py
+```
+
+The system will prompt you to enter a Pokemon query and conduct deep research.
+
+#### Test Mode (test_main.py)
+Run the test version with predefined queries:
+
+```bash
+python test_main.py
+```
+
+This will test the system with a predefined query to verify everything works.
+
+## Example Queries
+
+- "Build a team of all bug type Pokemon"
+- "Find me some mythical Pokemon but not Mew or Mewtwo"
+- "What are some cool water Pokemon that aren't too popular?"
+- "I want a pink fairy pokemon"
+- "Do Pokemon like berries?"
+- "Is there any winged fiery dragon?"
+- "What is Pokemon, why do people like them and what can they do?"
+
+## System Components
+
+- **LLMQueryAnalyzer**: Intent classification & entity extraction
+- **IntentEndpointMapper**: Strategic endpoint selection
+- **ExclusionHandler**: Multi-layer exclusion processing
+- **FallbackQueryProcessor**: Edge case handling
+- **DeepResearchAgent**: Complete orchestration
+- **AdvancedReportVisualizer**: Comprehensive reporting
+
+## Output
+
+The system generates:
+- Comprehensive research reports (saved as text files)
+- Raw research data (saved as JSON files)
+- Comparison with simple LLM responses
+
+All reports are saved in the `reports/` directory with timestamps.
+
+## Configuration
+
+### Environment Variables (.env file)
+
+```bash
+# OpenAI API Configuration
+OPENAI_API_KEY=your-openai-api-key-here
+
+# Logging (DEBUG, INFO, WARNING, ERROR)
+LOG_LEVEL=DEBUG
+```
+
+### Log Levels
+- `DEBUG`: Detailed logging for development
+- `INFO`: Standard logging (default)
+- `WARNING`: Only warnings and errors
+- `ERROR`: Only error messages
+
+## Requirements
+
+- Python 3.10+
+- OpenAI API key
+- Internet connection for Pokemon API access
+
+## Troubleshooting
+
+### Common Issues
+
+1. **"OPENAI_API_KEY not found"**
+   - Check that your `.env` file exists and contains the API key
+   - Ensure the API key is valid and has sufficient credits
+
+2. **"Module not found" errors**
+   - Run `pip install -r requirements.txt` to install dependencies
+
+3. **Network errors**
+   - Check your internet connection
+   - The system requires access to both OpenAI API and Pokemon API
+
+4. **Rate limiting**
+   - The system includes built-in rate limiting for API calls
+   - If you encounter rate limits, wait a few minutes and try again
 
 ## Project Structure
 
 ```
-convergence-interview/
-├── src/                    # Source code
-│   └── main.py            # Main application entry point
-├── tests/                 # Test files
-├── requirements/          # Python dependencies
-├── Dockerfile             # Docker image configuration
-├── docker-compose.dev.yaml # Development Docker Compose
-└── Makefile              # Common development commands
+claude_pokemon_agent/
+├── main.py              # Interactive version (keyboard input)
+├── test_main.py         # Test version (predefined queries)
+├── .env                 # Environment configuration (create from env_example.sh)
+├── requirements.txt     # Python dependencies
+├── README.md           # This documentation
+├── core/               # Data models
+├── api/                # API clients and token management
+├── analysis/           # Query analysis and intent mapping
+├── processing/         # Query processing and fallback handling
+├── research/           # Main orchestration logic
+├── reporting/          # Report generation and visualization
+└── reports/            # Generated reports (created automatically)
 ```
 
-## Development
+## Advanced Usage
 
-- All Python dependencies are managed through the `requirements/` directory
-- The project uses Docker for consistent development environments
-- If you want to add tests, put them in the `tests/` directory
-- Implement your solution in the `src/` directory
+### Report Location
+Reports are automatically saved in the `reports/` directory with timestamps:
+- `pokemon_research_YYYYMMDD_HHMMSS.txt` - Human-readable report
+- `research_data_YYYYMMDD_HHMMSS.json` - Raw data in JSON format
 
-
-We’re less concerned with what tools or architecture you pick, and more interested in how you make decisions, how you learn through the process, and how you communicate what you’ve built. If something doesn't work as planned, that’s fine—just tell us what you tried, what you learned, and where you'd take it next.
-
-Good luck! We’re excited to see how you approach this.
-
-Feel free to write your own README.md to explain your approach and any additional features you implemented.
-```
+### API Key Security
+- Never commit your `.env` file to version control
+- The `.env` file is already in `.gitignore` to prevent accidental commits
+- Use environment variables in production environments
